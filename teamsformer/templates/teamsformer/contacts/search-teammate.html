@@ -1,0 +1,79 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Search teammate {% endblock %}
+{% block panel-title %}Search teammate{% endblock %}
+{% block content %}
+<form method="GET" action="{% url 'search_teammate' %}" class="">
+		<div class="input-group">
+			<span class="input-group-btn">
+				<button class="btn btn-primary btn-sm" type="submit">
+					<i class="glyphicon glyphicon-search"></i>
+				</button>
+			</span>
+			<input type="search" class="form-control input-sm" placeholder="Search teammate" name="q" />
+		</div>
+</form>
+<div class="panel">
+	{% for u in users%}
+		<div class="row search-users">
+			<div class="col-sm-3">
+				<p><span class="label label-primary">Image</span></p>
+				{% if u.avatar %}
+				<img src="{{u.avatar.url}}" class="user-avatar img-thumbnail img-circle">
+				{% else %}
+				<img src="/media/noimage.png" class="user-avatar img-thumbnail img-circle">
+				{% endif %}
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Username</span></p>
+				<p class="pagination"><a href="{% url 'user_view' pk=u.pk %}">{{u.username}}</a></p>
+			</div>
+			<div class="col-sm-3">
+				<p><span class="label label-primary">Skills</span></p>
+				<p>{{u.skills|linebreaks}}</p>
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Role</span></p>
+				<p class="pagination">{{u.get_role_display}}</p>
+			</div>
+			<div class="col-sm-2">
+				<ul class="list-unstyled">
+					<p><span class="label label-primary">Options</span></p>
+					<li><a href="{% url 'user_view' pk=u.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+					{% if u != user %}
+						<li>
+							<a class="cursor-pointer" title="Send message"><span class="glyphicon glyphicon-envelope" data-toggle="modal" data-target="#myModal{{u.pk}}"></span></a>
+								<div id="myModal{{u.pk}}" class="modal fade" role="dialog">
+								  <div class="modal-dialog">
+									<div class="modal-content">
+									  <div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal">&times;</button>
+										<h4 class="modal-title">New message</h4>
+									  </div>
+										<form action="{% url 'new_message' pk=u.pk %}" method="POST">
+											{% csrf_token %}
+											<div class="modal-body">
+												<div class="form-group">
+													{{form.text}}
+												</div>
+											</div>
+											<div class="modal-footer">
+												<button type="submit" class="btn btn-success">Send</button>
+												<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+											</div>
+									  </form>
+									</div>
+								  </div>
+								</div>
+						</li>
+						{% if u not in user.contact_list.all %}
+							<li><a href="{% url 'add_to_contacts' pk=u.pk %}?back={{ request.path_info}}" data-toggle="tooltip" title="Add to contact list"><span class="glyphicon glyphicon-plus"></span></a></li>
+						{% endif %}
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+	{% empty %}
+		<small>Not found</small>
+	{% endfor %}
+</div>
+{% endblock %}

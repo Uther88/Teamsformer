@@ -1,0 +1,27 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Edit team {% endblock %}
+{% block panel-title %}Edit team{% endblock %}
+{% block content %}
+					<form method="POST" class="profile-form" enctype="multipart/form-data">				
+							{% csrf_token %}			
+							<div class="container-fluid">
+							{% for field in form %}
+							{% ifequal field.name 'image' %}
+								<div class="form-group row">
+									{% if form.instance.image %}					
+									<a href='{{ form.instance.image.url }}' class="lightview"><img src='{{ form.instance.image.url }}' class="img-thumbnail"></a>							
+									{% else %}
+									<a href='/media/noimage.png' class="lightview"><img src='/media/noimage.png' class="img-thumbnail"></a>
+									{% endif %}
+								</div>
+							{% endifequal %} 
+							<div class="form-group row">
+								<div class="error">{{ field.errors }}</div> 
+								<div class="col-sm-4 text-right">{{ field.label_tag }}</div>
+								<div class="col-sm-4">{{ field }}</div>
+							</div>			
+							{% endfor %}
+						</div>
+						<button type="submit" class="btn btn-success glyphicon glyphicon-ok" id="save"></button>
+					</form>	
+{% endblock %}

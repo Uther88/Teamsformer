@@ -1,0 +1,35 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} {{dialog}} {% endblock %}
+{% block panel-title %} {{dialog}} {% endblock %}
+{% block content %}
+	<div class="panel dialogs">
+		<div class="panel-body dialog col-sm-11 col-centered">
+		{% for message in dialog.messages.all|dictsort:'created_date'%}
+			<div class="row">
+			{% if message.sender != user%}
+				<div class="well well-sm text-left">
+						<a href="{% url 'user_view' pk=message.sender.pk %}" class="user-link">
+							<span class="label label-success">{{message.sender}}:</span>
+						</a>
+					<br/>
+					<small>{{message.created_date}}</small>
+				</div>
+				<div class="text-left alert">{{message.text}}</div>
+			{% else %}
+				<div class="well well-sm text-right">
+					<span class="label label-primary">You:</span><br/>
+					<small>{{message.created_date}}</small>
+				</div>
+				<div class="text-right alert">{{message.text}}</div>
+			{% endif %}
+			</div>
+		{% endfor %}
+		<form action="{% url 'send_message' pk=dialog.pk %}" method="POST">
+			{% csrf_token %}
+			<h5><span class="label label-default">Enter the message</span></h5>
+			<div class="form-group">{{form.text}}</div>
+			<button class="btn btn-primary">Send message</button>
+		</form>
+		</div>
+	</div>
+{% endblock %}

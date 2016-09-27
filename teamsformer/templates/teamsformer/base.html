@@ -1,0 +1,94 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang = "ru-RU">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %}TeamsFormer{% endblock%}</title>
+	<meta name="description" lang="ru" content="{% block description %} {% endblock %}"/>
+	<meta name="keywords" lang="ru" content="{% block keywords %} {% endblock %}">
+	<script src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.js' %}"></script>
+	<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+	<script src="{% static 'js/lightview.js' %}"></script>
+	<script src="{% static 'js/teamsformer.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+	<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+	<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">
+	<link rel="stylesheet" href="{% static 'css/lightview.css' %}">
+	<link rel="stylesheet" href="{% static 'css/main.css' %}">
+	<link rel="icon" type="image/png" href="/media/favicon.ico" />
+</head>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12 col-md-10 col-centered">
+					<div class="panel panel-primary text-center">
+						<div class="panel-heading">
+							<h3 class="panel-title"><b>{% block panel-title %}Teams page{% endblock %}</b></h3>
+						</div>
+						<nav class="navbar navbar-default">
+							<ul class="nav nav-pills">
+								<li><a href="{% url 'profile' %}">Profile</a></li>
+								<li class="dropdown">
+									<a href="/teams" class="dropdown-toggle" data-toggle="dropdown">Teams<span class="caret"></span>
+									{% if user.invites_to_teams.count > 0 %}
+										<span class="badge red">{{user.invites_to_teams.count}}</span>
+									{% endif %}
+									</a>
+									<ul class="dropdown-menu">
+										<li><a href="{% url 'teams_search' %}">Teams search</a></li>
+										<li><a href="{% url 'team_create' %}">Create team</a></li>
+										<li><a href="{% url 'my_teams' %}">My teams</a></li>
+										<li><a href="{% url 'my_invites' %}">Inites to teams
+										{% if user.invites_to_teams.count > 0 %}
+										<span class="badge">{{user.invites_to_teams.count}}</span>
+										{% endif %}
+										</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="{% url 'contacts' %}" class="dropdown-toggle" data-toggle="dropdown">Contacts<span class="caret"></span></a>
+										<ul class="dropdown-menu">
+											<li><a href="{% url 'contacts' %}">My contacts</a></li>
+											<li><a href="{% url 'search_teammate' %}">Search teammate</a></li>
+										</ul>
+									</li>
+								<li>
+									<a href="/messages/">Messages
+									{% if user.new_messages > 0 %}
+									<span class="badge red">{{user.new_messages}}</span></a>
+									{% endif %}
+									</a>
+								</li>
+							</ul>
+							<form method="GET" action="{% url 'teams_search' %}">
+								<div id="custom-search-input">
+									<div class="input-group ">
+										<input type="search" class="form-control input-sm" placeholder="Search teams" name="q" />
+										<span class="input-group-btn">
+											<button class="btn btn-success btn-sm" type="submit">
+												<i class="glyphicon glyphicon-search"></i>
+											</button>
+										</span>
+									</div>
+								</div>
+							</form>
+						</nav>
+						<div class="panel-body">
+							{% block content %}
+							{% endblock %}
+						</div>
+						<div class="panel-footer">
+							<small>TeamsFormer <span class="glyphicon glyphicon-copyright-mark"></span></small>
+							<div class="logout">
+								<a href="{% url 'logout' %}" data-toggle="tooltip" title="Logout">
+								<span class="btn btn-primary btn-sm glyphicon glyphicon-log-out"></span></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

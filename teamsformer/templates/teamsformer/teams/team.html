@@ -1,0 +1,157 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Team | {{team.title}} {% endblock %}
+{% block panel-title %}Team: {{team.title}}{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="col-sm-4">
+					{% if team.image %}
+						<img src="{{team.image.url}}" class="team-image img-thumbnail img-rounded">
+				    {% else %}
+						<img src="/media/noimage.png" class="team-image img-thumbnail img-rounded">
+				    {% endif %}
+                    <hr>
+                    <ul class="list-group">
+						{% if team.admin == user %}
+							<li class="list-group-item"><a href="{% url 'team_edit' pk=team.pk %}">Modify team</a></li>						
+							<li class="list-group-item">
+								 <a class="cursor-pointer" data-toggle="modal" data-target="#myModal">Delete team</a>
+							</li>
+							<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+							  <div class="modal-dialog" role="document">
+								<div class="modal-content">
+								  <div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="myModalLabel">Confirm deleting</h4>
+								  </div>
+								  <div class="modal-body">
+									Are you sure you want to delete the team {{team.title}}?
+								  </div>
+								  <div class="modal-footer">
+									<a href="{% url 'team_delete' pk=team.pk %}" class="btn btn-primary">Yes</a>  
+									<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+								  </div>
+								</div>
+							  </div>
+							</div>
+						{% else %}
+							{% if user.claims_to_teams.all and team.claims.all %}
+							<li class="list-group-item">
+								<a href="{% url 'team_unclaim' pk=team.pk %}?back={{ request.path_info }}" data-toggle="tooltip" title="Unclaim"><span class="glyphicon glyphicon-share"></span>Unclaim the team</a>						
+							</li>
+							{% else %}
+								<li class="list-group-item">
+									<a href="{% url 'claim_to_team' pk=team.pk %}" data-toggle="tooltip" title="Claim to team">
+										<span class="glyphicon glyphicon-edit"></span>Claim to team</a>
+								</li>
+							{% endif %}
+							<li class="list-group-item"><a href=""><span class="glyphicon glyphicon-envelope"></span>Contact to the team admin</a></li>
+						{% endif %}
+                    </ul>
+			</div>
+			<div class="col-sm-8 text-center table-bordered team-view">
+				<div class="panel-heading">
+                    <h2 class="shadow-box bg-primary img-rounded"><strong><span class="pagination">{{team.title}}</span></strong></h2>
+                </div>
+                <hr>
+				<h4><span class="label label-primary">Summary:</span></h4>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>Subjects:</strong></span> 
+					</div>
+					<div class="col-sm-6">
+						<span class="pagination">{{team.subjects}}</span> 
+					</div>
+				</div>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>About:</strong></span> 
+					 </div>
+					 <div class="col-sm-6">
+						<span class="pagination">{{team.description}}</span> 		
+					</div>
+				</div>		
+				<h4><span class="label label-primary">Membership:</span></h4>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>Admin:</strong></span> 
+					</div>
+					<div class="col-sm-6">
+						<span class="pagination"><a href="{% url 'user_view' pk=team.admin.pk %}">{{team.admin}}</a></span> 
+					</div>
+				</div>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>{% if team.investor.all.count <= 1 %}Investor: {%else%}Investors: {%endif%}</strong></span>
+					</div>
+					<div class="col-sm-6">
+						{% for investor in team.investor.all %}
+							<span class="pagination"><a href="{% url 'user_view' pk=investor.pk %}">{{investor}}</a></span>
+						{% endfor %}
+					</div>
+				</div>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>{% if team.developer.all.count <= 1 %}Developer: {%else%}Developers: {%endif%}</strong></span>
+					</div>
+					<div class="col-sm-6">
+						{% for developer in team.developer.all %}
+							<span class="pagination"><a href="{% url 'user_view' pk=developer.pk %}">{{developer}}</a></span>
+						{% endfor %}
+					</div>
+				</div>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination">
+							<strong>{% if team.sales_person.all.count <= 1 %}Sales person: {%else%}Sales persons: {%endif%}</strong>
+						</span>
+					</div>
+					<div class="col-sm-6">
+						{% for sperson in team.sales_person.all %}
+							<span class="pagination">
+								<a href="{% url 'user_view' pk=sperson.pk %}">{{sperson}}</a>
+							</span>
+						{% endfor %}
+					</div>
+				</div>
+				<div class="row shadow-box">
+					<div class="col-sm-6">
+						<span class="pagination"><strong>Needs:</strong></span>
+					</div>
+					<div class="col-sm-6">
+						{% for need in team.needs %}
+							<p><span class="label label-success">{{need}}</span></p>
+						{% endfor %}
+					</div>
+				</div>
+				{% if team.admin == user %}			
+					<div class="row container-fluid shadow-box">
+						<div class="col-sm-12 clearfix">
+							<h4><span class="label label-primary">Claims</span></h4>
+						</div>
+						{% for claim in team.claims.all %}
+								<div class="col-sm-3 pagination">
+									<a href="{% url 'user_view' pk=claim.user.pk %}">{{claim.user}}</a>
+								</div>
+								<div class="col-sm-2 pagination">
+									<b>{{claim.user.role}}</b>
+								</div>
+								<div class="col-sm-5 claim-comment" >
+									<span>{{claim.comment}}</span>
+								</div>
+								<div class="col-sm-2 claim-options">
+									<big><a href="{% url 'accept_claim' pk=claim.pk %}" data-toggle="tooltip" title="Accept"><span class="glyphicon glyphicon-ok-sign text-success"></span></a></big>
+									<big><a href="{% url 'refuse_claim' pk=claim.pk %}" data-toggle="tooltip" title="Refuse"><span class="glyphicon glyphicon-remove-sign text-danger"></span></a></big>
+								</div>									
+						</div>
+						{% empty %}
+							<p><small>Empty</small></p>
+						{% endfor %}					
+
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

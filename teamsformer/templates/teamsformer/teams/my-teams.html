@@ -1,0 +1,183 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} My teams {% endblock %}
+{% block panel-title %}My teams{% endblock %}
+{% block content %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h1 class="panel-title"><span class="label label-primary">Admin of teams</span></h1>
+	</div>
+	<div class="panel-body">
+	{% for team in own_teams %}
+		<div class="row my-teams">
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Image</span></p>
+				{% if team.image %}
+				<img src="{{team.image.url}}" class="t-img">
+				{% else %}
+				<img src="/media/noimage.png" class="t-img">
+				{% endif %}
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Name</span></p>
+				<span class="pagination"><a href="{% url 'team_view' pk=team.pk %}">{{team.title}}</a></span>
+			</div>
+			<div class="col-sm-3">
+				<p><span class="label label-primary">Subjects</span></p>
+				<span class="pagination">{{team.subjects}}</span>
+			</div>
+			<div class="col-sm-3 text-left">
+				<p class="text-center"><span class="label label-primary">Membership</span></p>
+						<div class="membership row">
+							<span class="glyphicon glyphicon-user col-sm-3" data-toggle="tooltip" title="Admin"></span>
+							<ul class="col-sm-9 small">
+								<li><a href="{% url 'user_view' pk=team.admin.pk %}">{{team.admin}}</a></li>
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-cog col-sm-3" data-toggle="tooltip" title="Developers"></span>
+							<ul class="small col-sm-9">
+							{% for dev in team.developer.all %}
+								<li><a href="{% url 'user_view' pk=dev.pk %}">{{dev}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-info-sign col-sm-3" data-toggle="tooltip" title="Investor"></span>
+							<ul class="small col-sm-9">
+							{% for inv in team.investor.all %}
+								<li><a href="{% url 'user_view' pk=inv.pk %}">{{inv}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-usd col-sm-3" data-toggle="tooltip" title="Salesperson"></span>
+							<ul class="small col-sm-9">
+							{% for sp in team.sales_person.all %}
+								<li><a href="{% url 'user_view' pk=sp.pk %}">{{sp}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>	
+						<hr class="slim">			
+			</div>
+			<div class="col-sm-2 options">
+				<ul><p><span class="label label-primary">Options</span></p>
+				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+				<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
+				<li data-toggle="tooltip" title="Delete"><a class="cursor-pointer" data-toggle="modal" data-target="#myModal{{team.pk}}">
+					<span class="glyphicon glyphicon-remove"></span></a>
+				</li>
+				<div class="modal fade" id="myModal{{team.pk}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+							  <div class="modal-dialog" role="document">
+								<div class="modal-content">
+								  <div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="myModalLabel">Confirm deleting</h4>
+								  </div>
+								  <div class="modal-body">
+									Are you sure you want to delete the team {{team.title}}?
+								  </div>
+								  <div class="modal-footer">
+									 <a href="{% url 'team_delete' pk=team.pk %}" class="btn btn-primary">Yes</a>
+									<button type="button" class="btn btn-default" data-dismiss="modal">No</button>								
+								  </div>
+								</div>
+							  </div>
+							</div>
+				</ul>
+			</div>
+		</div>
+	{%endfor%}
+	</div>
+</div>
+
+	<div class="panel panel-default">
+	<div class="panel-heading">
+		<h1 class="panel-title"><span class="label label-primary">Member of teams</span></h1>
+	</div>
+	<div class="panel-body">
+	{% for team in member_teams %}
+		<div class="row my-teams">
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Image</span></p>
+				{% if team.image %}
+				<img src="{{team.image.url}}" class="t-img">
+				{% else %}
+				<img src="/media/noimage.png" class="t-img">
+				{% endif %}
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-primary">Name</span></p>
+				<span class="pagination"><a href="{% url 'team_view' pk=team.pk %}">{{team.title}}</a></span>
+			</div>
+			<div class="col-sm-3">
+				<p><span class="label label-primary">Subjects</span></p>
+				<span class="pagination">{{team.subjects}}</span>
+			</div>
+			<div class="col-sm-3 text-left">
+				<p class="text-center"><span class="label label-primary">Membership</span></p>
+						<div class="membership row">
+							<span class="glyphicon glyphicon-user col-sm-3" data-toggle="tooltip" title="Admin"></span>
+							<ul class="col-sm-9 small">
+								<li><a href="{% url 'user_view' pk=team.admin.pk %}">{{team.admin}}</a></li>
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-cog col-sm-3" data-toggle="tooltip" title="Developers"></span>
+							<ul class="small col-sm-9">
+							{% for dev in team.developer.all %}
+								<li><a href="{% url 'user_view' pk=dev.pk %}">{{dev}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-info-sign col-sm-3" data-toggle="tooltip" title="Investor"></span>
+							<ul class="small col-sm-9">
+							{% for inv in team.investor.all %}
+								<li><a href="{% url 'user_view' pk=inv.pk %}">{{inv}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>
+						<hr class="slim">
+						<div class="membership row">
+							<span class="glyphicon glyphicon-usd col-sm-3" data-toggle="tooltip" title="Salesperson"></span>
+							<ul class="small col-sm-9">
+							{% for sp in team.sales_person.all %}
+								<li><a href="{% url 'user_view' pk=sp.pk %}">{{sp}}</a></li>
+								{% empty %}
+									<li class="text-center"><span class="label label-success">Vacant</span></li>
+							{% endfor %}
+							</ul>
+						</div>	
+						<hr class="slim">			
+			</div>
+			<div class="col-sm-2 options">
+				<ul><p><span class="label label-primary">Options</span></p>
+				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+				<li><a href="{% url 'team_leave' pk=team.pk %}" data-toggle="tooltip" title="Leave team"><span class="glyphicon glyphicon-log-out"></span></a></li>
+				{% if team.admin == user %}
+				<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
+				<li><a href="{% url 'team_delete' pk=team.pk %}" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-remove"></span></a></li>
+				{% endif %}
+				</ul>
+			</div>
+		</div>
+	{%endfor%}
+	</div>
+</div>
+			
+{% endblock %}

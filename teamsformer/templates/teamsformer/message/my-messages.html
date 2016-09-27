@@ -1,0 +1,51 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Messages {% endblock %}
+{% block panel-title %} Messages {% endblock %}
+{% block content %}
+{% for dialog in dialogs %}
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h5 class="panel-title"><span class="text-primary"><strong>{{dialog}}</strong></span></h5>
+		</div>
+		<div class="panel-body">
+			<div class="row">
+				{% for dialog_user in dialog.users.all %}
+					{% if dialog_user != user %}
+						<div class="col-sm-2">
+							{% if dialog_user.avatar %}
+								<img src="{{dialog_user.avatar.url}}" class="user-avatar img-thumbnail img-circle">
+							{% else %}
+								<img src="/media/noimage.png" class="user-avatar img-thumbnail img-circle">
+							{% endif %}					
+						</div>
+						<div class="col-sm-2 text-left">
+							<a href="{% url 'user_view' pk=dialog_user.pk %}">{{dialog_user.username}}</a>
+						</div>
+					{% endif %}
+				{% endfor %}
+					<div class="col-sm-6 text-left">
+						<p><span class="label label-primary">
+							{% if dialog.messages.all.0.sender == user %}
+								You: 
+							{% else %}
+								{{ dialog.messages.all.0.sender }}:
+							{% endif %}
+						<a href="{% url 'dialog_view' pk=dialog.pk %}">
+						</span></p>
+						{% if dialog.messages.all.0.is_new == True %}
+							<div class="alert alert-success"><p>{{dialog.messages.all.0.text}}</div></p>
+						{% else %}
+						<div class="well well-sm"><p>{{dialog.messages.all.0.text}}</div></p>
+						{% endif %}
+					</div></a>
+					<div class="col-sm-2">
+						<small>{{dialog.messages.all.0.created_date}}</small>
+					</div>
+			</div>
+		</div>
+		<p><a href="{% url 'dialog_view' pk=dialog.pk %}"><button class="btn btn-primary">Reply</button></a></p>
+	</div>
+	{% empty %}
+	<p>You have no messanges!</p>
+{% endfor %}
+{% endblock %}

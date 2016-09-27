@@ -1,0 +1,41 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang = "ru-RU">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{% block title %}TeamsFormer{% endblock%}</title>
+		<meta name="description" lang="ru" content="{% block description %} {% endblock %}"/>
+		<meta name="keywords" lang="ru" content="{% block keywords %} {% endblock %}">		
+		<script src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
+		<script src="{% static 'js/bootstrap.js' %}"></script>
+		<script src="{% static 'js/jquery-ui.min.js' %}"></script>
+		<script src="{% static 'js/lightview.js' %}"></script>
+		<script src="{% static 'js/teamsformer.js' %}"></script>
+		<link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}">
+		<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+		<link rel="stylesheet" href="{% static 'css/bootstrap-theme.css' %}">
+		<link rel="stylesheet" href="{% static 'css/lightview.css' %}">
+		<link rel="stylesheet" href="{% static 'css/main.css' %}">
+			
+	</head>
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="col-sm-3 col-centered">
+			<div class="panel panel-primary text-center">
+				<div class="panel-heading">
+					<h3 class="panel-title">Login by social network</h3>
+				</div>
+				<div class="panel-body">
+					<a href="{% url 'social:begin' 'facebook' %}" data-toggle="tooltip" title="Facebook"><img src="/media/icons/facebook-32.png"></a>
+					<a href="{% url 'social:begin' 'linkedin' %}" data-toggle="tooltip" title="Linkedin"><img src="/media/icons/linkedin-32.png"></a>
+				</div>
+				<div class="panel-footer">
+					<small>TeamsFormer inc.</small>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

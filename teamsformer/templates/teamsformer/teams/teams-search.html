@@ -1,0 +1,66 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Teams Search{% endblock %}
+{% block panel-title %}Teams Search{% endblock %}
+{% block content %}
+	<form method="GET" action="{% url 'teams_search' %}">
+		<div class="input-group">												
+			<span class="input-group-btn">
+				<button class="btn btn-primary btn-sm" type="submit">
+					<i class="glyphicon glyphicon-search"></i>
+				</button>
+			</span>		
+			<input type="search" class="form-control input-sm" placeholder="Search teammate" name="q" />							
+		</div>
+	</form>
+<div class="panel">
+		{% for team in teams %}
+			<div class="row search-teams">
+			<div class="col-sm-2">
+				<p><span class="label label-success">Image</span></p>
+				{% if team.image %}
+				<img src="{{team.image.url}}" class="user-avatar img-thumbnail img-circle">
+				{% else %}
+				<img src="/media/noimage.png" class="user-avatar img-thumbnail img-circle">
+				{% endif %}
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-success">Name</span></p>
+				<span class="pagination"><a href="{% url 'team_view' pk=team.pk %}">{{team.title}}</a></span>
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-success">Subjects</span></p>
+				<span class="pagination">{{team.subjects|linebreaks}}</span>
+			</div>
+			<div class="col-sm-2">
+				<ul class="list-unstyled">
+				<p><span class="label label-success">Needs</span></p>
+				{% for need in team.needs %}
+				<li><small>{{need}}</small></li>
+				{% endfor %}
+				</ul>
+			</div>
+			<div class="col-sm-2">
+				<p><span class="label label-success">Admin</span></p>
+				<span class="pagination"><a href="{% url 'user_view' pk=team.admin.pk %}">{{team.admin}}</a></span>
+			</div>
+			<div class="col-sm-2">
+				<ul class="list-unstyled">
+				<p><span class="label label-success">Options</span></p>
+				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+					{% if team.admin == user%}
+						<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
+					{% else %}
+						{% if user.claims_to_teams.all and team.claims.all %}
+							<li><a href="{% url 'team_unclaim' pk=team.pk %}?back={{ request.path|urlencode }}" data-toggle="tooltip" title="Unclaim"><span class="glyphicon glyphicon-star-empty"></span></a></li>
+						{% else %}
+							<li><a href="{% url 'claim_to_team' pk=team.pk %}" data-toggle="tooltip" title="Claim"><span class="glyphicon glyphicon-star"></span></a></li>
+						{% endif %}
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+		{% empty %}
+				<small>Not found</small>
+		{% endfor %}	
+</div>
+{% endblock %}

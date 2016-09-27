@@ -1,0 +1,58 @@
+{% extends 'teamsformer/base.html' %}
+{% block title %} Invites to teams {% endblock %}
+{% block panel-title %} Invites to teams {% endblock %}
+
+{% block content %}
+<div class="panel panel-default">
+	<div class="panel-body">
+		{% for invite in invites%}
+		<p class="text-left"><small class="date">{{ invite.created_date }} from </small><a href="{% url 'user_view' pk=invite.team.admin.pk %}">{{invite.team.admin}}</a></p>
+			<div class="row shadow-box">
+				<div class="col-sm-2">
+					{% if team.image %}
+						<img src="{{invite.team.image.url}}" class="t-img">
+					{% else %}
+						<img src="/media/noimage.png" class="t-img">
+					{% endif %}					
+				</div>
+				<div class="col-sm-2">
+					<span class="label label-primary">
+						Name
+					</span>
+					<p>
+						<a href="{% url 'team_view' pk=invite.team.pk %}" class="pagination">{{ invite.team.title }}</a>
+						</p>
+				</div>
+				<div class="col-sm-2">
+					<span class="label label-primary">
+						Subjects
+					</span>
+					<p class="pagination">{{invite.team.subjects}}</p>
+				</div>
+				<div class="col-sm-4">
+					<span class="label label-primary">
+						About
+					</span>
+					<p class="text-block">{{ invite.team.description }}</p>
+				</div>
+				<div class="col-sm-2">
+					<ul class="list-unstyled">
+						<p><span class="label label-primary">Options</span></p>
+						<li>
+							<a href="{% url 'team_view' pk=invite.team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a>
+						</li>
+						<li>
+							<a href="{% url 'accept_invite' pk=invite.pk%}" data-toggle="tooltip" title="Accept invite" class="text-success"><span class="glyphicon glyphicon-ok"></span></a>
+						</li>
+						<li>	
+							<a href="{% url 'deny_invite' pk=invite.pk%}" data-toggle="tooltip" title="Deny invite" class="text-danger"><span class="glyphicon glyphicon-remove"></span></a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		{% endfor %}	
+	</div>
+</div>
+	
+{% endblock %}
+
