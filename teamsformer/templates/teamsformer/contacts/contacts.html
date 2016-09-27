@@ -7,7 +7,7 @@
 	{% for u in contact_list %}
 		<div class="row">
 			<div class="col-sm-3">
-				<p><span class="label label-success">Image</span></p>
+				<p><span class="label label-primary">Image</span></p>
 				{% if u.avatar %}
 				
 				<img src="{{u.avatar.url}}" class="user-avatar img-thumbnail img-circle">
@@ -16,20 +16,20 @@
 				{% endif %}
 			</div>
 			<div class="col-sm-2">
-				<p><span class="label label-success">Username</span></p>
+				<p><span class="label label-primary">Username</span></p>
 				<span class="pagination"><a href="{% url 'user_view' pk=u.pk %}">{{u.username}}</a></span>
 			</div>
 			<div class="col-sm-3">
-				<p><span class="label label-success">Skills</span></p>
+				<p><span class="label label-primary">Skills</span></p>
 				<span class="pagination">{{u.skills|linebreaks}}</span>
 			</div>
 			<div class="col-sm-2">
-				<p><span class="label label-success">Role</span></p>
+				<p><span class="label label-primary">Role</span></p>
 				<span class="pagination">{{u.get_role_display}}</span>
 			</div>
 			<div class="col-sm-2">
 				<ul class="list-unstyled">
-					<p><span class="label label-success">Options</span></p>
+					<p><span class="label label-primary">Options</span></p>
 					<li><a href="{% url 'user_view' pk=u.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
 					<li><a href="{% url 'remove_from_contacts' pk=u.pk %}" data-toggle="tooltip" title="Remove from contact list"><span class="glyphicon glyphicon-remove"></span></a></li>
 				</ul>
