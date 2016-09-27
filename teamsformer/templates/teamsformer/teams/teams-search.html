@@ -16,7 +16,7 @@
 		{% for team in teams %}
 			<div class="row search-teams">
 			<div class="col-sm-2">
-				<p><span class="label label-success">Image</span></p>
+				<p><span class="label label-primary">Image</span></p>
 				{% if team.image %}
 				<img src="{{team.image.url}}" class="user-avatar img-thumbnail img-circle">
 				{% else %}
@@ -24,28 +24,28 @@
 				{% endif %}
 			</div>
 			<div class="col-sm-2">
-				<p><span class="label label-success">Name</span></p>
+				<p><span class="label label-primary">Name</span></p>
 				<span class="pagination"><a href="{% url 'team_view' pk=team.pk %}">{{team.title}}</a></span>
 			</div>
 			<div class="col-sm-2">
-				<p><span class="label label-success">Subjects</span></p>
+				<p><span class="label label-primary">Subjects</span></p>
 				<span class="pagination">{{team.subjects|linebreaks}}</span>
 			</div>
 			<div class="col-sm-2">
 				<ul class="list-unstyled">
-				<p><span class="label label-success">Needs</span></p>
+				<p><span class="label label-primary">Needs</span></p>
 				{% for need in team.needs %}
 				<li><small>{{need}}</small></li>
 				{% endfor %}
 				</ul>
 			</div>
 			<div class="col-sm-2">
-				<p><span class="label label-success">Admin</span></p>
+				<p><span class="label label-primary">Admin</span></p>
 				<span class="pagination"><a href="{% url 'user_view' pk=team.admin.pk %}">{{team.admin}}</a></span>
 			</div>
 			<div class="col-sm-2">
 				<ul class="list-unstyled">
-				<p><span class="label label-success">Options</span></p>
+				<p><span class="label label-primary">Options</span></p>
 				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
 					{% if team.admin == user%}
 						<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
