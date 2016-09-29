@@ -31,7 +31,7 @@ def profile(request):
 @login_required()
 def teams_search(request):
     query = request.GET.get('q')
-    if query != None:
+    if query is not None:
         teams = Team.objects.filter(subjects__icontains=query)
     else:
         teams = Team.objects.all()
@@ -154,7 +154,7 @@ def new_message(request, pk):
     recipient = User.objects.get(pk=pk)
     text = request.POST.get('text')
     try:
-        dialog = Dialog.objects.get(users=(sender.pk and recipient.pk))
+        dialog = Dialog.objects.filter(users=sender).filter(users=recipient).get()
         dialog.update_date()
     except ObjectDoesNotExist:
         dialog = Dialog.objects.create()
