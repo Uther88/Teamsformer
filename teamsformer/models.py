@@ -86,8 +86,8 @@ class Team(models.Model):
 # Model of dialogs between users
 class Dialog(models.Model):
     users = models.ManyToManyField(User, related_name="dialogs")
-    created_date = models.DateTimeField('Created date', auto_now_add=True)
-    updated_date = models.DateTimeField('Updated date', auto_now=True)
+    created_date = models.DateTimeField('Created date', default=datetime.now())
+    updated_date = models.DateTimeField('Updated date', default=datetime.now())
 
     class Meta:
         verbose_name = "Dialog"
@@ -167,7 +167,7 @@ class Claim(models.Model):
         verbose_name_plural = "Claims"
 
     def __str__(self):
-        return self.user.username + '_to_' + self.team.title
+        return self.user.username + ' to ' + self.team.title
 
     def approve(self):
         self.approved = True
@@ -177,3 +177,7 @@ class Claim(models.Model):
             self.team.investor == self.user
         elif self.user.role == 'Sales person':
             self.team.sales_person.add(self.user)
+        self.delete()
+
+    def deny(self):
+        self.delete()

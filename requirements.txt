@@ -1,0 +1,8 @@
+Django
+python-social-auth
+django-social-auth3
+pillow
+requests
+six
+requests_oauthlib
+django-select-multiple-field

@@ -105,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC+2'
 
 USE_I18N = True
 
@@ -124,4 +124,3 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = u'/home/teamsform/teamsformer/media'
 MEDIA_URL = '/media/'
 STATIC_ROOT = u'/home/teamsform/teamsformer/static'
-STATIC_URL = '/static/'
