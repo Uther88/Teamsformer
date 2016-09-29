@@ -8,7 +8,6 @@ from django.core.urlresolvers import resolve
 from django.core.exceptions import ObjectDoesNotExist
 
 
-
 # Base index
 def index(request):
     if request.user.is_authenticated:
@@ -168,10 +167,7 @@ def new_message(request, pk):
 def send_message(request, pk):
     text = request.POST.get('text')
     dialog = get_object_or_404(Dialog, pk=pk)
-    for member in dialog.users.all():
-        if member is not request.user:
-            recipient = member
-            break
+    recipient = dialog.users.all().exclude(pk=request.user.pk).get()
     Message.objects.create(sender=request.user, recipient=recipient, dialog=dialog, text=text)
     return redirect('dialog_view', pk=pk)
 
@@ -190,10 +186,10 @@ def claim_to_team(request, pk):
 # View for unclaiming to team
 @login_required()
 def team_unclaim(request, pk):
-    target_team = Team.objects.get(pk=pk)
+    back = request.GET.get('back')
+    target_team = get_object_or_404(Team, pk=pk)
     if target_team.claims.all() & request.user.claims_to_teams.all():
         Claim.objects.get(user=request.user, team=target_team).delete()
-    back = request.GET.get('back')
     if resolve(back):
         return HttpResponseRedirect(back)
 
@@ -202,10 +198,9 @@ def team_unclaim(request, pk):
 @login_required()
 def accept_claim(request, pk):
     claim = get_object_or_404(Claim, pk=pk)
-    request.user.contact_list.add(claim.user)
-    claim.approve()
-    claim.save()
-    claim.delete()
+    if claim.team.admin == request.user:
+        request.user.contact_list.add(claim.user)
+        claim.approve()
     return redirect('team_view', pk=claim.team.pk)
 
 
@@ -291,6 +286,7 @@ def deny_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
     invite.deny()
     return redirect('my_invites')
+
 
 # View for viewing the users
 @login_required()
