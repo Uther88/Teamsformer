@@ -3,6 +3,7 @@ from .models import Team, User, Dialog, Message, Invite, Claim
 import datetime
 from .settings import DATABASES
 import os.path
+
 # Create your tests here.
 
 
@@ -11,6 +12,18 @@ class TestDatabase(TestCase):
     def test_exists_db(self):
         self.db = DATABASES['default']['NAME']
         self.assertEqual(os.path.exists(self.db), True)
+
+
+class TestUser(TestCase):
+    def test_str(self):
+        self.user = User(username="testuser")
+        self.assertEqual(str(self.user), "testuser")
+
+    def test_new_messages(self):
+        self.user = User.objects.create(username='testuser1')
+        self.message = Message.objects.create(recipient=self.user, text="testing message")
+        self.assertEqual(type(self.user.new_messages()), int)
+        self.assertEqual(self.user.new_messages(), 1)
 
 
 class TestDialog(TestCase):
@@ -41,10 +54,6 @@ class TestMessage(TestCase):
         self.message = Message.objects.create(sender=self.user1,recipient=self.user2, text="test message")
         self.message.read()
         self.assertEqual(self.message.is_new, False)
-
-    def test_new_messages_for_int(self):
-        self.user = User(username="TestUser")
-        self.assertEqual(self.user.new_messages(), int())
 
 
 class TestTeam(TestCase):
