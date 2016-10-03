@@ -6,13 +6,13 @@ from select_multiple_field.models import SelectMultipleField
 
 
 # Roles
-D = "Developer"
-I = "Investor"
-S = "Sales person"
+D = "developer"
+I = "investor"
+S = "sales_person"
 ROLES = (
     (D, 'Developer'),
     (I, 'Investor'),
-    (S, 'Sales person'),
+    (S, 'Salesperson'),
 )
 
 
@@ -142,11 +142,11 @@ class Invite(models.Model):
 
     def accept(self):
         self.accepted = True
-        if self.user.role == 'Developer':
+        if self.user.role == 'developer':
             self.team.developer.add(self.user)
-        elif self.user.role == 'Investor':
+        elif self.user.role == 'investor':
             self.team.investor == self.user
-        elif self.user.role == 'Sales person':
+        elif self.user.role == 'salesperson':
             self.team.sales_person.add(self.user)
         self.delete()
 
@@ -171,11 +171,11 @@ class Claim(models.Model):
 
     def approve(self):
         self.approved = True
-        if self.user.role == 'Developer':
+        if self.user.role == 'developer':
             self.team.developer.add(self.user)
-        elif self.user.role == 'Investor':
+        elif self.user.role == 'investor':
             self.team.investor == self.user
-        elif self.user.role == 'Sales person':
+        elif self.user.role == 'salesperson':
             self.team.sales_person.add(self.user)
         self.delete()
 

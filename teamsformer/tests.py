@@ -6,6 +6,7 @@ import os.path
 from pkg_resources import require, DistributionNotFound
 from .views import index
 
+
 # System tests
 
 # Test DB existing
@@ -29,6 +30,8 @@ class TestRequirements(TestCase):
         except DistributionNotFound as e:
             self.fail(e)
 
+
+# Unit tests
 
 class TestUser(TestCase):
     def test_str(self):
@@ -100,7 +103,7 @@ class TestTeam(TestCase):
 
     def test_member_list(self):
         self.user = User.objects.create(
-            username="TestUser", role="Developer"
+            username="TestUser", role="developer"
         )
         self.team = Team.objects.create(
             title="Tes team", subjects="Test Team", description="Test Team"
@@ -125,7 +128,7 @@ class TestInvite(TestCase):
 
     def test_accept(self):
         self.user = User.objects.create(
-            username="TestUser", role="Developer"
+            username="TestUser", role="developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -143,7 +146,7 @@ class TestInvite(TestCase):
 
     def test_deny(self):
         self.user = User.objects.create(
-            username="TestUser", role="Developer"
+            username="TestUser", role="developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -168,7 +171,7 @@ class TestClaim(TestCase):
 
     def test_approve(self):
         self.user = User.objects.create(
-            username="TestUser", role="Developer"
+            username="TestUser", role="developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -186,7 +189,7 @@ class TestClaim(TestCase):
 
     def test_deny(self):
         self.user = User.objects.create(
-            username="TestUser", role="Developer"
+            username="TestUser", role="developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -198,3 +201,5 @@ class TestClaim(TestCase):
         self.assertEqual(
             Claim.objects.filter(pk=self.claim.pk).exists(), False
         )
+
+# Integrate tests

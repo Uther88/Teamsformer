@@ -6,7 +6,7 @@ from .models import Team, User, Claim, Dialog, Message, Invite
 from django.db.models import Q
 from django.core.urlresolvers import resolve
 from django.core.exceptions import ObjectDoesNotExist
-
+from .models import ROLES
 
 # Base index
 def index(request):
@@ -49,14 +49,10 @@ def team_view(request, pk):
 def team_create(request):
     contact_list = request.user.contact_list.all()
     form = TeamForm(request.POST or None, request.FILES or None)
-    form.fields['developer'].queryset = User.objects.filter(
-        Q(pk=request.user.pk) & Q(role='Developer') | Q(role="Developer") & Q(pk__in=contact_list))
-
-    form.fields['investor'].queryset = User.objects.filter(
-        Q(pk=request.user.pk) & Q(role='Investor') | Q(role="Investor") & Q(pk__in=contact_list))
-
-    form.fields['sales_person'].queryset = User.objects.filter(
-        Q(pk=request.user.pk) & Q(role='Sales person') | Q(role="Sales person") & Q(pk__in=contact_list))
+    for role in ROLES:
+        form.fields[role[0]].queryset = User.objects.filter(
+            Q(pk=request.user.pk) & Q(role=role[0]) | Q(role=role[0]) & Q(pk__in=contact_list)
+        )
     if form.is_valid():
         team = form.save()
         team.admin = request.user
@@ -72,14 +68,10 @@ def team_edit(request, pk):
     contact_list = request.user.contact_list.all()
     if editable_team.admin == request.user:
         form = TeamForm(request.POST or None, request.FILES or None, instance=editable_team)
-        form.fields['developer'].queryset = User.objects.filter(
-            Q(pk=request.user.pk) & Q(role='Developer') | Q(role="Developer") & Q(pk__in=contact_list))
-
-        form.fields['investor'].queryset = User.objects.filter(
-            Q(pk=request.user.pk) & Q(role='Investor') | Q(role="Investor") & Q(pk__in=contact_list))
-
-        form.fields['sales_person'].queryset = User.objects.filter(
-            Q(pk=request.user.pk) & Q(role='Sales person') | Q(role="Sales person") & Q(pk__in=contact_list))
+        for role in ROLES:
+            form.fields[role[0]].queryset = User.objects.filter(
+                Q(pk=request.user.pk) & Q(role=role[0]) | Q(role=role[0]) & Q(pk__in=contact_list)
+            )
         if form.is_valid():
             team = form.save()
             team.admin = request.user
@@ -105,15 +97,9 @@ def team_delete(request, pk):
 @login_required()
 def team_leave(request, pk):
     target_team = get_object_or_404(Team, pk=pk)
-    for dev in request.user.teams_developer.all():
-        if dev == target_team:
-            request.user.teams_developer.remove(target_team)
-    for inv in request.user.teams_investor.all():
-        if inv == target_team:
-            request.user.teams_investor.remove(target_team)
-    for sp in request.user.teams_sales_person.all():
-        if sp == target_team:
-            request.user.teams_sales_person.remove(target_team)
+    for team in (request.user.teams_developer.all(), request.user.teams_investor.all(), request.user.teams_sales_person.all()):
+        if target_team in team:
+            team.filter(pk=target_team.pk).remove()
     return redirect('my_teams')
 
 
