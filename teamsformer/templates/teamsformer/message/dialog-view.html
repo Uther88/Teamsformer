@@ -24,7 +24,7 @@
 			{% endif %}
 			</div>
 		{% endfor %}
-		<form action="{% url 'send_message' pk=dialog.pk %}" method="POST">
+		<form action="{% url 'send_message' pk=recipient.pk %}?back={{ request.path_info}}" method="POST">
 			{% csrf_token %}
 			<h5><span class="label label-default">Enter the message</span></h5>
 			<div class="form-group">{{form.text}}</div>

@@ -23,7 +23,7 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 								<h4 class="modal-title">New message</h4>
 							  </div>
-								<form action="{% url 'new_message' pk=target_user.pk %}" method="POST">
+								<form action="{% url 'send_message' pk=target_user.pk %}?back={{ request.path_info}}" method="POST">
 									{% csrf_token %}
 									<div class="modal-body">
 										<div class="form-group">

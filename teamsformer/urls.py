@@ -28,7 +28,6 @@ urlpatterns = [
     # Messages views
     url(r'^messages/$', views.my_messages, name='my_messages'),
     url(r'^messages/dialog/(?P<pk>[0-9]+)$', views.dialog_view, name='dialog_view'),
-    url(r'^messages/new/(?P<pk>[0-9]+)$', views.new_message, name='new_message'),
     url(r'^messages/send/(?P<pk>[0-9]+)$', views.send_message, name='send_message'),
     # Contacts views
     url(r'^contacts/$', views.contacts, name='contacts'),

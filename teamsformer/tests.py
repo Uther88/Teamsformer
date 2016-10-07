@@ -1,10 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from .models import Team, User, Dialog, Message, Invite, Claim
 import datetime
 from .settings import DATABASES, BASE_DIR
 import os.path
 from pkg_resources import require, DistributionNotFound
-from .views import index
+from teamsformer import views
 
 
 # System tests
@@ -40,8 +40,8 @@ class TestUser(TestCase):
 
     def test_new_messages(self):
         self.user = User.objects.create(username='TestUser')
-        self.message = Message.objects.create(
-            recipient=self.user, text="testing message")
+        self.message = Message.objects.create(sender=self.user, recipient=self.user)
+        self.user.received_messages.add(self.message)
         self.assertEqual(
             type(self.user.new_messages()), int
         )
@@ -202,4 +202,22 @@ class TestClaim(TestCase):
             Claim.objects.filter(pk=self.claim.pk).exists(), False
         )
 
+
 # Integrate tests
+class TestIndexView(TestCase):
+    # load base data
+    fixtures = ['test_fixtures.json']
+
+    # configure http-client
+    def setUp(self):
+        self.client = Client()
+
+    def test_index_details(self):
+        response = self.client.get('/index/')
+
+        # check response status
+        self.assertEqual(response.status_code, 200)
+        # check template name
+        self.assertIn('index.html', response.templates[0].name)
+        # check view function
+        self.assertEqual(response.resolver_match.func, views.index)

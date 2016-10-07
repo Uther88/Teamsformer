@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404
+from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404, HttpResponse
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .forms import UserForm, TeamForm, MessageForm
@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.core.urlresolvers import resolve
 from django.core.exceptions import ObjectDoesNotExist
 from .models import ROLES
+
 
 # Base index
 def index(request):
@@ -97,9 +98,9 @@ def team_delete(request, pk):
 @login_required()
 def team_leave(request, pk):
     target_team = get_object_or_404(Team, pk=pk)
-    for team in (request.user.teams_developer.all(), request.user.teams_investor.all(), request.user.teams_sales_person.all()):
-        if target_team in team:
-            team.filter(pk=target_team.pk).remove()
+    for team in (request.user.teams_developer, request.user.teams_investor, request.user.teams_sales_person):
+        if target_team in team.all():
+            team.remove(target_team)
     return redirect('my_teams')
 
 
@@ -125,37 +126,32 @@ def my_messages(request):
 @login_required()
 def dialog_view(request, pk):
     dialog = get_object_or_404(Dialog, pk=pk)
+    recipient = dialog.users.filter(pk=request.user.pk).exclude().get()
     dialog.messages.order_by('created_date')
     for message in dialog.messages.all():
         message.read()
     form = MessageForm(request.POST or None)
-    return render(request, 'teamsformer/message/dialog-view.html', {'dialog': dialog, 'form':form})
+    return render(request, 'teamsformer/message/dialog-view.html', {
+        'dialog': dialog, 'form':form, 'recipient': recipient})
 
 
 # View for creating and sending new messages
 @login_required()
-def new_message(request, pk):
-    sender = User.objects.get(pk=request.user.pk)
-    recipient = User.objects.get(pk=pk)
+def send_message(request, pk):
+    sender = request.user
+    recipient = get_object_or_404(User, pk=pk)
     text = request.POST.get('text')
+    back = request.GET.get('back')
     try:
-        dialog = Dialog.objects.filter(users=sender).filter(users=recipient).get()
+        dialog = Dialog.objects.get(users=sender.pk and recipient.pk)
         dialog.update_date()
     except ObjectDoesNotExist:
         dialog = Dialog.objects.create()
         dialog.users.add(sender, recipient)
-    Message.objects.create(sender=sender, recipient=recipient, dialog=dialog, text=text)
-    return HttpResponseRedirect('/messages')
-
-
-# View for send messages
-@login_required()
-def send_message(request, pk):
-    text = request.POST.get('text')
-    dialog = get_object_or_404(Dialog, pk=pk)
-    recipient = dialog.users.all().exclude(pk=request.user.pk).get()
-    Message.objects.create(sender=request.user, recipient=recipient, dialog=dialog, text=text)
-    return redirect('dialog_view', pk=pk)
+    Message.objects.create(
+        sender=sender, recipient=recipient, dialog=dialog, text=text)
+    if resolve(back):
+        return HttpResponseRedirect(back)
 
 
 # View for claiming to teams
@@ -163,9 +159,11 @@ def send_message(request, pk):
 def claim_to_team(request, pk):
     target_team = Team.objects.get(pk=pk)
     if not target_team.claims.all() & request.user.claims_to_teams.all():
-        Claim.objects.create(user=request.user,
-                             team=target_team,
-                             comment="Hi! I am a %s, please take me to your team" % request.user.role)
+        Claim.objects.create(
+            user=request.user,
+            team=target_team,
+            comment="Hi! I am a %s, please take me to your team" % request.user.role
+        )
     return redirect('team_view', pk=pk)
 
 
@@ -255,7 +253,8 @@ def invite_to_team(request, pk):
 @login_required()
 def my_invites(request):
     invites = Invite.objects.filter(user=request.user)
-    return render(request, 'teamsformer/teams/my-invites.html', {'invites': invites})
+    return render(request, 'teamsformer/teams/my-invites.html',
+                  {'invites': invites})
 
 
 # View for accepting invite to team
@@ -279,6 +278,7 @@ def deny_invite(request, pk):
 def user_view(request, pk):
     form = MessageForm(request.POST or None)
     target_user = get_object_or_404(User, pk=pk)
-    return render(request, 'teamsformer/contacts/user-view.html', {'target_user': target_user, 'form': form})
+    return render(request, 'teamsformer/contacts/user-view.html',
+                  {'target_user': target_user, 'form': form})
 
 

@@ -1,0 +1,32 @@
+[
+	{
+	  "model": "teamsformer.user",
+	  "pk": 1,
+	  "fields": {
+		  "username": "TestUser1",
+		  "email": "testuser1@mail.com",
+		  "role": "developer",
+		  "password": "!aaDHZjZPBq171i65xwnidfX19iZJt8s1AqvE8uuT"
+	  }
+	},
+	{
+	  "model": "teamsformer.user",
+	  "pk": 2,
+	  "fields": {
+			"username": "TestUser2",
+			"email": "testuser2@mail.com",
+			"role": "investor",
+			"password": "!aaDHZjZPBq171i65xwnidfX19iZJt8s1AqvE8uuT"
+		}
+	},
+	{
+	  "model": "teamsformer.user",
+	  "pk": 3,
+	  "fields": {
+			"username": "TestUser3",
+			"email": "testuser3@mail.com",
+			"role": "sales_person",
+			"password": "!aaDHZjZPBq171i65xwnidfX19iZJt8s1AqvE8uuT"
+		}
+	}
+]

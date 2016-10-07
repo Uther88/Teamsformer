@@ -106,7 +106,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, related_name="send_messages", max_length=40, null=True)
     recipient = models.ForeignKey(User, related_name="received_messages", max_length=40, null=True)
     dialog = models.ForeignKey(Dialog, related_name='messages', null=True)
-    text = models.TextField('Text of message', default=None, max_length=400)
+    text = models.TextField('Text of message', default=None, max_length=400, null=True)
     created_date = models.DateTimeField('Created data', auto_now_add=True)
     is_new = models.BooleanField(default=True)
 
