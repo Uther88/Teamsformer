@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from .models import Team, User, Dialog, Message, Invite, Claim
+from .forms import UserForm
 import datetime
 from .settings import DATABASES, BASE_DIR
 import os.path
@@ -212,7 +213,7 @@ class TestIndexView(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_index_details(self):
+    def test_index_for_unauthorized_enter(self):
         response = self.client.get('/index/')
 
         # check response status
@@ -221,3 +222,36 @@ class TestIndexView(TestCase):
         self.assertIn('index.html', response.templates[0].name)
         # check view function
         self.assertEqual(response.resolver_match.func, views.index)
+
+    def test_index_for_authorized_enter(self):
+        login = self.client.login(username="TestUser1", password="12345")
+        response = self.client.get('/index/', follow=True)
+
+        # check for authorize user
+        self.assertEqual(login, True)
+        # check response status
+        self.assertEqual(response.status_code, 200)
+        # check template name
+        self.assertIn('profile.html', response.templates[0].name)
+
+
+class TestProfileView(TestCase):
+    # load base data
+    fixtures = ['test_fixtures.json']
+
+    # configure http-client
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username="TestUser1", password="12345")
+
+    def test_profile_entry(self):
+        response = self.client.get('/profile/')
+
+        # check response status
+        self.assertEqual(response.status_code, 200)
+        # check for existing form in response context
+        self.assertIn('form', response.context)
+        # check for equal of form name
+        self.assertEqual(str(response.context['form']), 'UserForm')
+        # check for existing user in form instance
+        self.assertEqual(response.context['form'].instance.username, 'TestUser1')

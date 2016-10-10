@@ -12,6 +12,7 @@ class UserForm(ModelForm):
     email = forms.EmailField(max_length=40, required=True)
     first_name = forms.CharField(max_length=40)
     last_name = forms.CharField(max_length=40)
+
     class Meta:
         model = User
         fields = ('username', 'email',
@@ -26,6 +27,8 @@ class UserForm(ModelForm):
             self.fields[field].widget.attrs['class'] = 'form-control'
             self.fields[field].widget.attrs['disabled'] = 'true'
 
+    def __str__(self):
+        return 'UserForm'
 
 # Form for editing and creating teams
 class TeamForm(ModelForm):
