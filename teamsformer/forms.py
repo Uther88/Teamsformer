@@ -30,6 +30,7 @@ class UserForm(ModelForm):
     def __str__(self):
         return 'UserForm'
 
+
 # Form for editing and creating teams
 class TeamForm(ModelForm):
     needs = SelectMultipleFormField(widget=forms.CheckboxSelectMultiple,
@@ -48,6 +49,9 @@ class TeamForm(ModelForm):
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
             self.fields['needs'].widget.attrs['class'] = 'choices'
+
+    def __str__(self):
+        return 'TeamForm'
 
 
 # Form for creating new messages

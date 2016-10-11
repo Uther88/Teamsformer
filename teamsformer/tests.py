@@ -8,10 +8,20 @@ from pkg_resources import require, DistributionNotFound
 from teamsformer import views
 
 
+# Base testing case with basic fixtures and settings
+class BaseTestCase(TestCase):
+    fixtures = ['test_fixtures.json']
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username="TestUser1", password="12345")
+
+
 # System tests
 
 # Test DB existing
 class TestDatabase(TestCase):
+
     def test_exists_db(self):
         self.db = DATABASES['default']['NAME']
         self.assertEqual(
@@ -21,6 +31,7 @@ class TestDatabase(TestCase):
 
 # Test requirements from requirements.txt
 class TestRequirements(TestCase):
+
     def test_requirements(self):
         try:
             requirements = open(BASE_DIR + '/requirements.txt')
@@ -35,6 +46,7 @@ class TestRequirements(TestCase):
 # Unit tests
 
 class TestUser(TestCase):
+
     def test_str(self):
         self.user = User(username="TestUser")
         self.assertEqual(str(self.user), "TestUser")
@@ -52,6 +64,7 @@ class TestUser(TestCase):
 
 
 class TestDialog(TestCase):
+
     def test_str(self):
         self.user1 = User.objects.create(username="TestUser1")
         self.user2 = User.objects.create(username="TestUser2")
@@ -73,6 +86,7 @@ class TestDialog(TestCase):
 
 
 class TestMessage(TestCase):
+
     def test_str(self):
         self.user1 = User.objects.create(username="TestUser1")
         self.user2 = User.objects.create(username="TestUser2")
@@ -96,6 +110,7 @@ class TestMessage(TestCase):
 
 
 class TestTeam(TestCase):
+
     def test_str(self):
         self.team = Team(title="Test team")
         self.assertEquals(
@@ -119,6 +134,7 @@ class TestTeam(TestCase):
 
 
 class TestInvite(TestCase):
+
     def test_str(self):
         self.user = User(username="TestUser")
         self.team = Team(title="Test team")
@@ -162,6 +178,7 @@ class TestInvite(TestCase):
 
 
 class TestClaim(TestCase):
+
     def test_str(self):
         self.user = User(username="TestUser")
         self.team = Team(title="Test team")
@@ -205,11 +222,8 @@ class TestClaim(TestCase):
 
 
 # Integrate tests
-class TestIndexView(TestCase):
-    # load base data
-    fixtures = ['test_fixtures.json']
+class TestIndexView(BaseTestCase):
 
-    # configure http-client
     def setUp(self):
         self.client = Client()
 
@@ -218,8 +232,10 @@ class TestIndexView(TestCase):
 
         # check response status
         self.assertEqual(response.status_code, 200)
+
         # check template name
         self.assertIn('index.html', response.templates[0].name)
+
         # check view function
         self.assertEqual(response.resolver_match.func, views.index)
 
@@ -229,29 +245,109 @@ class TestIndexView(TestCase):
 
         # check for authorize user
         self.assertEqual(login, True)
+
         # check response status
         self.assertEqual(response.status_code, 200)
+
         # check template name
         self.assertIn('profile.html', response.templates[0].name)
 
 
-class TestProfileView(TestCase):
-    # load base data
-    fixtures = ['test_fixtures.json']
-
-    # configure http-client
-    def setUp(self):
-        self.client = Client()
-        self.client.login(username="TestUser1", password="12345")
+class TestProfileView(BaseTestCase):
 
     def test_profile_entry(self):
         response = self.client.get('/profile/')
 
         # check response status
         self.assertEqual(response.status_code, 200)
+
         # check for existing form in response context
         self.assertIn('form', response.context)
+
         # check for equal of form name
         self.assertEqual(str(response.context['form']), 'UserForm')
+
         # check for existing user in form instance
         self.assertEqual(response.context['form'].instance.username, 'TestUser1')
+
+        # check view function
+        self.assertEqual(response.resolver_match.func, views.profile)
+
+        # check template name
+        self.assertIn('profile.html', response.templates[0].name)
+
+
+class TestTeamsSearch(BaseTestCase):
+
+    def test_view_response(self):
+        response = self.client.get('/teams/search/', {'q': 'test'})
+
+        # check status code
+        self.assertEqual(response.status_code, 200)
+
+        # check context
+        self.assertEqual('test', response.context['teams'][0].subjects)
+
+        # check view function
+        self.assertEqual(response.resolver_match.func, views.teams_search)
+
+        # check template name
+        self.assertIn('teams-search.html', response.templates[0].name)
+
+
+class TestTeamView(BaseTestCase):
+
+    def test_team_view(self):
+        self.team = Team.objects.get(title='TestTeam')
+        response = self.client.get('/teams/%s' % self.team.pk)
+
+        # check status code
+        self.assertEqual(response.status_code, 200)
+
+        # check context
+        self.assertEqual(self.team, response.context['team'])
+
+        # check view function
+        self.assertEqual(response.resolver_match.func, views.team_view)
+
+        # check template name
+        self.assertIn('team.html', response.templates[0].name)
+
+
+class TestTeamCreateView(BaseTestCase):
+
+    def test_team_create_view(self):
+        response = self.client.get('/teams/create/')
+        self.user1 = response.context['user']
+        self.user2 = User.objects.get(username="TestUser2")
+        self.user1.contact_list.add(self.user2)
+
+        # check status code
+        self.assertEqual(response.status_code, 200)
+
+        # check context
+        self.assertEqual(str(response.context['form']), 'TeamForm')
+
+        # check form instance
+        self.assertIn(self.user2.username, str(response.context['form']['investor']))
+
+        # check view function
+        self.assertEqual(response.resolver_match.func, views.team_create)
+
+        # check template name
+        self.assertIn('team-create.html', response.templates[0].name)
+
+    def test_team_create(self):
+        response = self.client.post('/teams/create/', follow=True,
+                                    data={
+                                        'title': 'TestTeam2',
+                                        'subjects': 'test',
+                                        'description': 'test'
+                                    })
+        # check status code
+        self.assertEqual(response.status_code, 200)
+
+        # check for existing of created team
+        self.assertEqual(Team.objects.filter(title="TestTeam2").exists(), True)
+        # check for created team admin
+        self.assertEqual(Team.objects.get(title="TestTeam2").admin, response.context['user'])

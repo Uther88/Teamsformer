@@ -20,13 +20,14 @@
 		}
 	},
 	{
-	  "model": "teamsformer.user",
-	  "pk": 3,
+	  "model": "teamsformer.team",
+	  "pk": 1,
 	  "fields": {
-			"username": "TestUser3",
-			"email": "testuser3@mail.com",
-			"role": "sales_person",
-			"password": "pbkdf2_sha256$30000$aAdRhO3rXvdu$SrB512gaAEzfUjE1JQEKJeGMf+e8vFr4yXq/MGG65ng="
+			"title": "TestTeam",
+			"subjects": "test",
+			"description": "test",
+			"image": "noimage.png",
+			"admin": 1
 		}
 	}
 ]
