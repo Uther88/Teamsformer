@@ -10,8 +10,8 @@ D = "developer"
 I = "investor"
 S = "sales_person"
 ROLES = (
-    (D, 'Developer'),
-    (I, 'Investor'),
+    {D :'Developer'},
+    (I : 'Investor'),
     (S, 'Salesperson'),
 )
 
@@ -81,6 +81,10 @@ class Team(models.Model):
             for user in queryset:
                 members_list.append(user.pk)
         return members_list
+
+    def get_needs_full(self):
+        for need in self.needs:
+            return need
 
 
 # Model of dialogs between users

@@ -70,28 +70,33 @@
 			</div>
 			<div class="col-sm-2 options">
 				<ul><p><span class="label label-primary">Options</span></p>
-				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
-				<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
-				<li data-toggle="tooltip" title="Delete"><a class="cursor-pointer" data-toggle="modal" data-target="#myModal{{team.pk}}">
-					<span class="glyphicon glyphicon-remove"></span></a>
-				</li>
-				<div class="modal fade" id="myModal{{team.pk}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-							  <div class="modal-dialog" role="document">
-								<div class="modal-content">
-								  <div class="modal-header">
-									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-									<h4 class="modal-title" id="myModalLabel">Confirm deleting</h4>
-								  </div>
-								  <div class="modal-body">
-									Are you sure you want to delete the team {{team.title}}?
-								  </div>
-								  <div class="modal-footer">
-									 <a href="{% url 'team_delete' pk=team.pk %}" class="btn btn-primary">Yes</a>
-									<button type="button" class="btn btn-default" data-dismiss="modal">No</button>								
-								  </div>
-								</div>
-							  </div>
-							</div>
+					<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+					<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
+					<li data-toggle="tooltip" title="Delete"><a class="cursor-pointer" data-toggle="modal" data-target="#myModal{{team.pk}}">
+						<span class="glyphicon glyphicon-remove"></span></a>
+					</li>
+					<div class="modal fade" id="myModal{{team.pk}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					  <div class="modal-dialog" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="myModalLabel">Confirm deleting</h4>
+						  </div>
+						  <div class="modal-body">
+							Are you sure you want to delete the team {{team.title}}?
+						  </div>
+						  <div class="modal-footer">
+							  <div class="form-group">
+									<form action="{% url 'team_delete' pk=team.pk %}" method="POST" class="form-inline">
+										{%csrf_token%}
+										<button class="btn btn-danger">Yes</button>										
+									<button type="button" class="btn btn-success" data-dismiss="modal">No</button>		
+									</form>
+							  </div>						
+						  </div>
+						</div>
+					  </div>
+					</div>
 				</ul>
 			</div>
 		</div>
@@ -167,12 +172,34 @@
 			</div>
 			<div class="col-sm-2 options">
 				<ul><p><span class="label label-primary">Options</span></p>
-				<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
-				<li><a href="{% url 'team_leave' pk=team.pk %}" data-toggle="tooltip" title="Leave team"><span class="glyphicon glyphicon-log-out"></span></a></li>
-				{% if team.admin == user %}
-				<li><a href="{% url 'team_edit' pk=team.pk %}" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></li>
-				<li><a href="{% url 'team_delete' pk=team.pk %}" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-remove"></span></a></li>
-				{% endif %}
+					<li><a href="{% url 'team_view' pk=team.pk %}" data-toggle="tooltip" title="View"><span class="glyphicon glyphicon-eye-open"></span></a></li>
+					<li data-toggle="tooltip" title="Leave team">
+						<a class="cursor-pointer" data-toggle="modal" data-target="#leaveModal{{team.pk}}">
+							<span class="glyphicon glyphicon-log-out"></span>
+						</a>
+					</li>
+					<div class="modal fade" id="leaveModal{{team.pk}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					  <div class="modal-dialog" role="document">
+						<div class="modal-content">
+						  <div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="myModalLabel">Confirm leaving</h4>
+						  </div>
+						  <div class="modal-body">
+							Are you sure you want to leave team {{team.title}}?
+						  </div>
+						  <div class="modal-footer">
+							  <div class="form-group">
+									<form action="{% url 'team_leave' pk=team.pk %}" method="POST" class="form-inline">
+										{%csrf_token%}
+										<button class="btn btn-danger">Yes</button>										
+									<button type="button" class="btn btn-success" data-dismiss="modal">No</button>		
+									</form>
+							  </div>						
+						  </div>
+						</div>
+					  </div>
+					</div>
 				</ul>
 			</div>
 		</div>

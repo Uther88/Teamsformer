@@ -1,13 +1,11 @@
 from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404, HttpResponse
-from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .forms import UserForm, TeamForm, MessageForm
 from .models import Team, User, Claim, Dialog, Message, Invite
 from django.db.models import Q
 from django.core.urlresolvers import resolve
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
 from .models import ROLES
-
 
 # Base index
 def index(request):
@@ -74,34 +72,25 @@ def team_edit(request, pk):
                 Q(pk=request.user.pk) & Q(role=role[0]) | Q(role=role[0]) & Q(pk__in=contact_list)
             )
         if form.is_valid():
-            team = form.save()
-            team.admin = request.user
             form.save()
             return redirect('my_teams')
         return render(request, 'teamsformer/teams/team-edit.html', {'form': form})
     else:
-        return redirect('my_teams')
+        raise PermissionError("You are not an admin of this team!")
 
 
 # View for deleting the team
 @login_required()
 def team_delete(request, pk):
-    removed_team = Team.objects.get(pk=pk)
-    if removed_team.admin == request.user:
-        removed_team.delete()
+    if request.method == 'POST':
+        removed_team = Team.objects.get(pk=pk)
+        if removed_team.admin == request.user:
+            removed_team.delete()
+        else:
+            raise PermissionError("You are not an admin of this team!")
+        return redirect(my_teams)
     else:
-        raise PermissionError("It is not your team!")
-    return redirect('my_teams')
-
-
-# View for leaving of team
-@login_required()
-def team_leave(request, pk):
-    target_team = get_object_or_404(Team, pk=pk)
-    for team in (request.user.teams_developer, request.user.teams_investor, request.user.teams_sales_person):
-        if target_team in team.all():
-            team.remove(target_team)
-    return redirect('my_teams')
+        raise SuspiciousOperation('Method %s not allowed, use POST!' % request.method)
 
 
 # View for viewing teams where user admin and member
@@ -112,8 +101,20 @@ def my_teams(request):
         Q(developer=request.user) | Q(investor=request.user) | Q(sales_person=request.user)
     )
     return render(request, 'teamsformer/teams/my-teams.html',
-                  {'own_teams': own_teams, 'member_teams': member_teams})
+                    {'own_teams': own_teams, 'member_teams': member_teams})
 
+
+# View for leaving of team
+@login_required()
+def team_leave(request, pk):
+    if request.method == "POST":
+        target_team = get_object_or_404(Team, pk=pk)
+        for team in (request.user.teams_developer, request.user.teams_investor, request.user.teams_sales_person):
+            if target_team in team.all():
+                team.remove(target_team)
+        return redirect('my_teams')
+    else:
+        raise SuspiciousOperation('Method %s not allowed, use POST!' % request.method)
 
 # View for viewing all dialogs
 @login_required()
