@@ -1,11 +1,13 @@
-from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404, HttpResponse
+from django.shortcuts import render, HttpResponseRedirect, redirect, get_object_or_404, HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from .forms import UserForm, TeamForm, MessageForm
 from .models import Team, User, Claim, Dialog, Message, Invite
 from django.db.models import Q
 from django.core.urlresolvers import resolve
-from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation, DisallowedRedirect
+
 from .models import ROLES
+
 
 # Base index
 def index(request):
@@ -49,7 +51,7 @@ def team_create(request):
     contact_list = request.user.contact_list.all()
     form = TeamForm(request.POST or None, request.FILES or None)
     for role in ROLES:
-        form.fields[role[0]].queryset = User.objects.filter(
+        form.fields[role[0].lower()].queryset = User.objects.filter(
             Q(pk=request.user.pk) & Q(role=role[0]) | Q(role=role[0]) & Q(pk__in=contact_list)
         )
     if form.is_valid():
@@ -68,7 +70,7 @@ def team_edit(request, pk):
     if editable_team.admin == request.user:
         form = TeamForm(request.POST or None, request.FILES or None, instance=editable_team)
         for role in ROLES:
-            form.fields[role[0]].queryset = User.objects.filter(
+            form.fields[role[0].lower()].queryset = User.objects.filter(
                 Q(pk=request.user.pk) & Q(role=role[0]) | Q(role=role[0]) & Q(pk__in=contact_list)
             )
         if form.is_valid():
@@ -98,7 +100,7 @@ def team_delete(request, pk):
 def my_teams(request):
     own_teams = Team.objects.filter(admin=request.user)
     member_teams = Team.objects.filter(
-        Q(developer=request.user) | Q(investor=request.user) | Q(sales_person=request.user)
+        Q(developer=request.user) | Q(investor=request.user) | Q(salesperson=request.user)
     )
     return render(request, 'teamsformer/teams/my-teams.html',
                     {'own_teams': own_teams, 'member_teams': member_teams})
@@ -109,12 +111,13 @@ def my_teams(request):
 def team_leave(request, pk):
     if request.method == "POST":
         target_team = get_object_or_404(Team, pk=pk)
-        for team in (request.user.teams_developer, request.user.teams_investor, request.user.teams_sales_person):
+        for team in (request.user.teams_developer, request.user.teams_investor, request.user.teams_salesperson):
             if target_team in team.all():
                 team.remove(target_team)
         return redirect('my_teams')
     else:
         raise SuspiciousOperation('Method %s not allowed, use POST!' % request.method)
+
 
 # View for viewing all dialogs
 @login_required()
@@ -127,13 +130,13 @@ def my_messages(request):
 @login_required()
 def dialog_view(request, pk):
     dialog = get_object_or_404(Dialog, pk=pk)
-    recipient = dialog.users.filter(pk=request.user.pk).exclude().get()
+    recipient = dialog.users.exclude(pk=request.user.pk).get()
     dialog.messages.order_by('created_date')
     for message in dialog.messages.all():
         message.read()
     form = MessageForm(request.POST or None)
     return render(request, 'teamsformer/message/dialog-view.html', {
-        'dialog': dialog, 'form':form, 'recipient': recipient})
+        'dialog': dialog, 'form': form, 'recipient': recipient})
 
 
 # View for creating and sending new messages
@@ -142,7 +145,7 @@ def send_message(request, pk):
     sender = request.user
     recipient = get_object_or_404(User, pk=pk)
     text = request.POST.get('text')
-    back = request.GET.get('back')
+    back = request.POST.get('back')
     try:
         dialog = Dialog.objects.get(users=sender.pk and recipient.pk)
         dialog.update_date()
@@ -150,9 +153,13 @@ def send_message(request, pk):
         dialog = Dialog.objects.create()
         dialog.users.add(sender, recipient)
     Message.objects.create(
-        sender=sender, recipient=recipient, dialog=dialog, text=text)
-    if resolve(back):
-        return HttpResponseRedirect(back)
+        sender=sender, recipient=recipient, dialog=dialog, text=text
+    )
+    try:
+        if resolve(back):
+            return redirect(back)
+    except Http404 as e:
+        raise DisallowedRedirect(e)
 
 
 # View for claiming to teams
@@ -193,13 +200,15 @@ def accept_claim(request, pk):
 @login_required()
 def refuse_claim(request, pk):
     claim = get_object_or_404(Claim, pk=pk)
-    claim.delete()
+    if claim.team.admin == request.user:
+        claim.deny()
     return redirect('team_view', pk=claim.team.pk)
 
 
 # View for contact list
 @login_required()
 def contacts(request):
+    if request.user.is
     contact_list = request.user.contact_list.all()
     return render(request, 'teamsformer/contacts/contacts.html', {'contact_list': contact_list})
 

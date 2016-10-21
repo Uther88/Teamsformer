@@ -1,11 +1,12 @@
 from django.test import TestCase, Client
 from .models import Team, User, Dialog, Message, Invite, Claim
-from .forms import UserForm, TeamForm
+from .forms import UserForm, TeamForm, MessageForm
 import datetime
 from .settings import DATABASES, BASE_DIR
 import os.path
 from pkg_resources import require, DistributionNotFound
 from teamsformer import views
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation, DisallowedRedirect
 
 
 # Base testing case with basic fixtures and settings
@@ -119,7 +120,7 @@ class TestTeam(TestCase):
 
     def test_member_list(self):
         self.user = User.objects.create(
-            username="TestUser", role="developer"
+            username="TestUser", role="Developer"
         )
         self.team = Team.objects.create(
             title="Tes team", subjects="Test Team", description="Test Team"
@@ -145,7 +146,7 @@ class TestInvite(TestCase):
 
     def test_accept(self):
         self.user = User.objects.create(
-            username="TestUser", role="developer"
+            username="TestUser", role="Developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -163,7 +164,7 @@ class TestInvite(TestCase):
 
     def test_deny(self):
         self.user = User.objects.create(
-            username="TestUser", role="developer"
+            username="TestUser", role="Developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -189,7 +190,7 @@ class TestClaim(TestCase):
 
     def test_approve(self):
         self.user = User.objects.create(
-            username="TestUser", role="developer"
+            username="TestUser", role="Developer"
         )
         self.team = Team.objects.create(
             title="Test team", description="Test team", subjects="Test team"
@@ -440,10 +441,10 @@ class TestTeamEditView(CustomTestCase):
         )
 
     def test_team_modify(self):
-        self.team = Team.objects.get(title="TestTeam")
-        response = self.client.post('/teams/edit/%s' % self.team.pk,
+        team = Team.objects.get(title="TestTeam")
+        response = self.client.post('/teams/edit/%s' % team.pk,
                                     follow=True, data={'title': 'ModifyTeam'})
-        self.team.refresh_from_db()
+        team.refresh_from_db()
 
         # check status code
         self.assertEqual(
@@ -455,7 +456,7 @@ class TestTeamEditView(CustomTestCase):
         )
         # check for changing team title
         self.assertEqual(
-            self.team.title, 'ModifyTeam'
+            team.title, 'ModifyTeam'
         )
 
 
@@ -531,4 +532,256 @@ class TestMyTeamsView(CustomTestCase):
 class TestTeamLeaveView(CustomTestCase):
 
     def test_team_leave(self):
-        response = self.client.get
+        user = User.objects.get(username="TestUser1")
+        team = Team.objects.get(title="TestTeam")
+        team.developer.add(user)
+        response = self.client.post('/teams/leave/%s' % team.pk, follow=True)
+        wrong_response = self.client.get('/teams/leave/%s' % team.pk, follow=True)
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for leaving user from team
+        self.assertFalse(
+            team.developer.filter(pk=user.pk).exists()
+        )
+        # check for redirecting after successful leaving team
+        self.assertTrue(
+            response.redirect_chain
+        )
+        self.assertEqual(
+            response.resolver_match.func, views.my_teams
+        )
+        # check for raises exception if request method is GET
+        self.assertEqual(
+            wrong_response.status_code, 400
+        )
+
+
+class TestMyMessagesView(CustomTestCase):
+
+    def test_my_messages(self):
+        response = self.client.get('/messages/')
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check view function
+        self.assertEqual(
+            response.resolver_match.func, views.my_messages
+        )
+        # check for template name
+        self.assertIn(
+            'my-messages.html', response.templates[0].name
+        )
+        # check for returned context
+        self.assertIn(
+            'dialogs', response.context
+        )
+
+
+class TestDialogView(CustomTestCase):
+
+    def test_dialog_view(self):
+        user1 = User.objects.get(username="TestUser1")
+        user2 = User.objects.get(username="TestUser2")
+        dialog = Dialog.objects.create()
+        dialog.users.add(user1, user2)
+        message = Message.objects.create(sender=user1, recipient=user2,
+                                         dialog=dialog, text="Testing message"
+                                         )
+        response = self.client.get('/messages/dialog/%s' % dialog.pk)
+
+        # check for response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for reading new messages
+        message.refresh_from_db(fields=['is_new'])
+        self.assertFalse(
+            message.is_new
+        )
+        # check for ordering messages
+        self.assertTrue(
+            dialog.messages.all().ordered
+        )
+        # check view function
+        self.assertEqual(
+            response.resolver_match.func, views.dialog_view
+        )
+        # check for template name
+        self.assertIn(
+            'dialog-view.html', response.templates[0].name
+        )
+        # check for existing form, dialog and recipient in response context
+        self.assertEqual(
+            response.context['form'].__class__, MessageForm
+        )
+        self.assertEqual(
+            response.context['dialog'], dialog
+        )
+        self.assertIn(
+            'recipient', response.context
+        )
+        self.assertEqual(
+            response.context['recipient'], user2
+        )
+
+
+class TestSendMessageView(CustomTestCase):
+    def test_send_new_message(self):
+        user1 = User.objects.get(username="TestUser1")
+        user2 = User.objects.get(username="TestUser2")
+        text = "Testing message"
+        back = '/messages/'
+        response = self.client.post(
+            '/messages/send/%s' % user2.pk,
+            data={'text': text, 'back': back}, follow=True
+        )
+        wrong_response = self.client.post(
+            '/messages/send/%s' % user2.pk,
+            data={'text': text, 'back': 'wrong_redirect'}, follow=True)
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for creating a new dialog
+        self.assertTrue(
+            Dialog.objects.filter(users=(user1.pk, user2.pk)).exists()
+        )
+        # check for creating message
+        self.assertTrue(
+            Message.objects.filter(
+                sender=user1, recipient=user2, text=text).exists()
+        )
+        # check for existing new message in dialog
+        dialog = Dialog.objects.get(users=(user1.pk, user2.pk))
+        self.assertTrue(
+            dialog.messages.filter(sender=user1, recipient=user2).exists()
+        )
+        # check for raises exception on bad redirect
+        self.assertEqual(
+            wrong_response.status_code, 400
+        )
+
+
+class TestClaimToTeamView(CustomTestCase):
+
+    def test_claim_to_team(self):
+        user = User.objects.get(username="TestUser1")
+        team = Team.objects.get(title="TestTeam")
+        response = self.client.get('/teams/claim/%s' % team.pk, follow=True)
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for creating a claim to team
+        self.assertTrue(
+            Claim.objects.filter(user=user, team=team).exists()
+        )
+        # check for redirecting after successful claim to team
+        self.assertTrue(
+            response.redirect_chain
+        )
+        self.assertIn(
+            '/teams/%s' % team.pk, response.redirect_chain[0]
+        )
+
+
+class TestTeamUnclaimView(CustomTestCase):
+
+    def test_unclaim_from_team(self):
+        user = User.objects.get(username="TestUser1")
+        team = Team.objects.get(title="TestTeam")
+        claim = Claim.objects.create(user=user, team=team, comment="Test claim")
+        back = '/teams/%s' % team.pk
+        response = self.client.get(
+            '/teams/unclaim/%s' % team.pk, data={'back': back}, follow=True
+        )
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for removing claim to team
+        self.assertFalse(
+            Claim.objects.filter(pk=claim.pk).exists()
+        )
+        # check for successful redirecting after unclaiming
+        self.assertTrue(
+            response.redirect_chain
+        )
+        self.assertIn(
+            '/teams/%s' % team.pk, response.redirect_chain[0]
+        )
+
+
+class TestAcceptClaimView(CustomTestCase):
+
+    def test_accept_claim(self):
+        user1 = User.objects.get(username="TestUser1")
+        user2 = User.objects.get(username="TestUser2")
+        team = Team.objects.get(title="TestTeam")
+        claim = Claim.objects.create(user=user2, team=team, comment="Test claim")
+        response = self.client.get('/teams/claim/%s/accept' % claim.pk, follow=True)
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for adding claim user to contact list of team admin
+        self.assertTrue(
+            user1.contact_list.filter(username="TestUser2").exists()
+        )
+        self.assertTrue(
+            team.investor.filter(username="TestUser2").exists()
+        )
+        # check for deleting claim after approving
+        self.assertFalse(
+            Claim.objects.filter(pk=claim.pk).exists()
+        )
+        # check for redirecting after successfull adding user to team
+        self.assertTrue(
+            response.redirect_chain
+        )
+        self.assertIn(
+            '/teams/%s' % team.pk, response.redirect_chain[0]
+        )
+
+
+class TestRefuseClaimView(CustomTestCase):
+
+    def test_refuse_claim(self):
+        user = User.objects.get(username="TestUser2")
+        team = Team.objects.get(title="TestTeam")
+        claim = Claim.objects.create(user=user, team=team, comment="Test claim")
+        response = self.client.get('/teams/claim/%s/refuse' % claim.pk, follow=True)
+
+        # check response status code
+        self.assertEqual(
+            response.status_code, 200
+        )
+        # check for removing claim after refusing
+        self.assertFalse(
+            Claim.objects.filter(pk=claim.pk).exists()
+        )
+        # check for redirecting after refuse claim
+        self.assertTrue(
+            response.redirect_chain
+        )
+        self.assertIn(
+            '/teams/%s' % team.pk, response.redirect_chain[0]
+        )
+
+
+class TestContactListView(CustomTestCase):
+
+    def test_contact_list(self):
+        user1 = User.objects.get(username="TesTuser1")
+        user2 = User.objects.get(username="TesTuser2")
+        user1.contact_list.add(user2)
+        response = self.client.get('')

@@ -59,7 +59,7 @@
 						<div class="membership row">
 							<span class="glyphicon glyphicon-usd col-sm-3" data-toggle="tooltip" title="Salesperson"></span>
 							<ul class="small col-sm-9">
-							{% for sp in team.sales_person.all %}
+							{% for sp in team.salesperson.all %}
 								<li><a href="{% url 'user_view' pk=sp.pk %}">{{sp}}</a></li>
 								{% empty %}
 									<li class="text-center"><span class="label label-success">Vacant</span></li>
@@ -161,7 +161,7 @@
 						<div class="membership row">
 							<span class="glyphicon glyphicon-usd col-sm-3" data-toggle="tooltip" title="Salesperson"></span>
 							<ul class="small col-sm-9">
-							{% for sp in team.sales_person.all %}
+							{% for sp in team.salesperson.all %}
 								<li><a href="{% url 'user_view' pk=sp.pk %}">{{sp}}</a></li>
 								{% empty %}
 									<li class="text-center"><span class="label label-success">Vacant</span></li>

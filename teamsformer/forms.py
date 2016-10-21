@@ -41,7 +41,7 @@ class TeamForm(ModelForm):
         model = Team
         fields = ('title', 'subjects', 'description',
                   'image', 'developer',
-                  'investor', 'sales_person', 'needs'
+                  'investor', 'salesperson', 'needs'
                   )
 
     def __init__(self, *args, **kwargs):
@@ -64,3 +64,6 @@ class MessageForm(ModelForm):
         super(ModelForm, self).__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control hresize'
+
+    def __str__(self):
+        return 'MessageForm'

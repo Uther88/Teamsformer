@@ -24,10 +24,11 @@
 			{% endif %}
 			</div>
 		{% endfor %}
-		<form action="{% url 'send_message' pk=recipient.pk %}?back={{ request.path_info}}" method="POST">
+		<form action="{% url 'send_message' pk=recipient.pk %}" method="POST">
 			{% csrf_token %}
 			<h5><span class="label label-default">Enter the message</span></h5>
 			<div class="form-group">{{form.text}}</div>
+			<input type="hidden" value="{{request.path_info}}" name="back">
 			<button class="btn btn-primary">Send message</button>
 		</form>
 		</div>

@@ -6,13 +6,13 @@ from select_multiple_field.models import SelectMultipleField
 
 
 # Roles
-D = "developer"
-I = "investor"
-S = "sales_person"
+D = "Developer"
+I = "Investor"
+S = "Salesperson"
 ROLES = (
-    {D :'Developer'},
-    (I : 'Investor'),
-    (S, 'Salesperson'),
+    (D, 'Developer'),
+    (I,  'Investor'),
+    (S,  'Salesperson'),
 )
 
 
@@ -58,7 +58,7 @@ class Team(models.Model):
     admin = models.ForeignKey(User, related_name='teams_admin', null=True)
     developer = models.ManyToManyField(User, related_name='teams_developer', blank=True)
     investor = models.ManyToManyField(User, related_name='teams_investor', blank=True)
-    sales_person = models.ManyToManyField(User, related_name='teams_sales_person', blank=True)
+    salesperson = models.ManyToManyField(User, related_name='teams_salesperson', blank=True)
     created_date = models.DateTimeField('Created data', default=datetime.now)
     needs = SelectMultipleField(max_length=50, choices=ROLES,
                               blank=True, null=True
@@ -74,17 +74,13 @@ class Team(models.Model):
     def get_members(self):
         members = (self.developer.all(),
                    self.investor.all(),
-                   self.sales_person.all()
+                   self.salesperson.all()
                    )
         members_list = []
         for queryset in members:
             for user in queryset:
                 members_list.append(user.pk)
         return members_list
-
-    def get_needs_full(self):
-        for need in self.needs:
-            return need
 
 
 # Model of dialogs between users
@@ -146,11 +142,11 @@ class Invite(models.Model):
 
     def accept(self):
         self.accepted = True
-        if self.user.role == 'developer':
+        if self.user.role == 'Developer':
             self.team.developer.add(self.user)
-        elif self.user.role == 'investor':
+        elif self.user.role == 'Investor':
             self.team.investor == self.user
-        elif self.user.role == 'salesperson':
+        elif self.user.role == 'Salesperson':
             self.team.sales_person.add(self.user)
         self.delete()
 
@@ -175,11 +171,11 @@ class Claim(models.Model):
 
     def approve(self):
         self.approved = True
-        if self.user.role == 'developer':
+        if self.user.role == 'Developer':
             self.team.developer.add(self.user)
-        elif self.user.role == 'investor':
-            self.team.investor == self.user
-        elif self.user.role == 'salesperson':
+        elif self.user.role == 'Investor':
+            self.team.investor.add(self.user)
+        elif self.user.role == 'Salesperson':
             self.team.sales_person.add(self.user)
         self.delete()
 

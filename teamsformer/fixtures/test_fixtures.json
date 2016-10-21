@@ -5,7 +5,7 @@
 	  "fields": {
 		  "username": "TestUser1",
 		  "email": "testuser1@mail.com",
-		  "role": "developer",
+		  "role": "Developer",
 		  "password": "pbkdf2_sha256$30000$aAdRhO3rXvdu$SrB512gaAEzfUjE1JQEKJeGMf+e8vFr4yXq/MGG65ng="
 	  }
 	},
@@ -15,7 +15,7 @@
 	  "fields": {
 			"username": "TestUser2",
 			"email": "testuser2@mail.com",
-			"role": "investor",
+			"role": "Investor",
 			"password": "pbkdf2_sha256$30000$aAdRhO3rXvdu$SrB512gaAEzfUjE1JQEKJeGMf+e8vFr4yXq/MGG65ng="
 		}
 	},
